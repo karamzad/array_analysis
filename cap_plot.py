@@ -23,10 +23,6 @@ def make_array(f):
     #t, cfreq, slow, baz, mathpi, sem, beampow, avgsem, avgsemtheo, obstheo = data
     
 
-    #if cfreq !=20.:
-    #    print 'skip'
-    #    continue
-    #ax.scatter(baz, slow, s=20., c=sem, cmap=cmap, vmin=vmin, vmax=vmax)
 d = make_array(f)
 cfreq = d.T[1]
 cfreqs = num.unique(cfreq)
