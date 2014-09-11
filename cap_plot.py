@@ -2,9 +2,26 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib import rc
 import numpy as num
+from pyrocko.gui_util import Marker
+from pyrocko import util
+from pyrocko.gf import seismosizer
 
 fn = sys.argv[1]
 f = open(fn, 'r')
+
+markers = Marker.load_markers(sys.argv[2])
+event_time = '2013-03-11 01:26:45.100'
+
+for em in markers:
+    if em.tmin==util.str_to_time(event_time):
+        event = em._event
+        source = seismosizer.Source.from_pyrocko_event(event)
+        break
+
+# calculate theoretical azimut and backazimuth  
+center_array_target = seismosizer.Target(lat=50.2417175, lon=12.328385875)
+distance = center_array_target.distance_to(source)
+azibazi = center_array_target.azibazi_to(source)
 
 cmap = plt.cm.jet
 vmin = 0.
