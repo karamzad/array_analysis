@@ -1,3 +1,5 @@
+#!/usr/bin/python 
+
 import sys
 import matplotlib.pyplot as plt
 from matplotlib import rc
@@ -51,7 +53,9 @@ cfreqs = num.unique(cfreq)
 num_subplots = len(cfreqs)
 f, axs = plt.subplots(1, num_subplots, subplot_kw=dict(polar=True))
 f2, axs2 = plt.subplots()
+axs3 = axs2.twinx()
 
+theta_max = 0.3
 # loop over center frequencies
 for i,cf in enumerate(cfreqs):
     ind = num.where(d.T==cf)[1]
@@ -65,20 +69,29 @@ for i,cf in enumerate(cfreqs):
     vmin = min(sem)
     vmax = max(sem)
     axs2.plot(t, sem, label=cf)
-    axs2.plot(t, beamp, label=cf)
-    ax = axs[i]
+    axs2.set_ylabel('Semblance')
+    axs3.plot(t, beamp, label=cf)
+    axs3.set_ylabel('Beam power')
+    axs2.set_xlabel("time [s]")
 
     # Draw polar bazi, slowness and semblance plot
-    ax.scatter(baz, 
+    ax = axs[i]
+    ax.scatter(baz*num.pi/180., 
                slo, 
-               s=30, 
+               s=32, 
                c=sem, 
                cmap=cmap,
                vmin=vmin,
                vmax=vmax)
     
+    # Add arrow indicting azimuth of maximum  
+    i_sem_max = num.where(sem==max(sem))[0][0]
+    ax.arrow(0,0, baz[i_sem_max]/180*num.pi, theta_max, edgecolor='r',
+            label='theoretical') 
+    
     # Add arrow indicting theoretical direction
-    ax.arrow(0,0, azibazi[1]/180*num.pi, 0.2)
+    ax.arrow(0,0, azibazi[0]/180*num.pi, theta_max,
+            label='FK')
 
     # Turn plot so that North is up
     ax.set_theta_zero_location('N')
@@ -87,8 +100,9 @@ for i,cf in enumerate(cfreqs):
     ax.set_theta_direction(-1)
 
     # limit slowness range
-    ax.set_ylim([0., 0.3])
+    ax.set_ylim([0., theta_max])
+    ax.set_title("Center Frequency %s Hz"%cf, fontsize=14)
 
-axs2.legend()
+axs2.legend(title='f_c [Hz]')
 
 plt.show()
