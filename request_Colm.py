@@ -5,32 +5,38 @@ from pyrocko.model import Event
 from pyrocko.util import str_to_time
 import locale
 import re
-#locale.setlocale(locale.LC_ALL, 'de_DE')
+import sys
 
-year = 2014
-#url = 'http://www.uni-leipzig.de/collm/auswertung_%s.htm'%year
-url = 'http://www.uni-leipzig.de/collm/auswertung_temp.html'
+try:
+    year = sys.argv[1]
+except IndexError:
+    print 'USAGE: python request_Colm.py [YEAR]'
+if year=='2014':
+    year='temp'
+    suffix = 'html'
+else:
+    suffix = 'htm'
+
+url = 'http://www.uni-leipzig.de/collm/auswertung_%s.%s'%(year, suffix)
+print url
 
 usock = urllib2.urlopen(url)
 data = usock.read()
 usock.close()
-if not year==2014:
+if not year=='temp':
     data = data.split('<PRE>')[1].split('</PRE>')[0]
-#else:
-#    data = data.rsplit('<PRE>')[1].split('</PRE>')[0]
-#    print data
 
 markers = []
 for line in data.split('\n'):
+    print line
     if len(line)<70:
         continue
     if not line[3].isdigit():
         continue
     print line
-    #print line
-    print line
     if not '-2014 ' in line:
-        continue
+        if year=='temp':
+            continue
     event_id = int(line[:4])
     date = line[5:27]
     try:
@@ -38,13 +44,16 @@ for line in data.split('\n'):
     except ValueError:
         continue
     t = (t-datetime(1970,1,1)).total_seconds()
-    print t
 
     lat = float(line[28:34])
     lon = float(line[35:41])
     depth = float(line[43:47])
     print line[56:60]
-    mag = float(line[56:60])
+    if year=='temp':
+        mag = float(line[56:60])
+    else:
+        print line[60:64]
+        mag = float(line[60:64])
     name = line[69::]
     e = Event(lat=lat, lon=lon, depth=depth, magnitude=mag, name=name, time=t, 
              catalog='Colm')
